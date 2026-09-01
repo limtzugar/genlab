@@ -1,0 +1,134 @@
+// Enter — Gene-Driven Invention & Patent Pipeline
+// Real persistence layer for inventions, genes, and AHI scores.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// A single inventive session — one prompt, one pipeline run.
+model Session {
+  id          String      @id @default(cuid())
+  prompt      String
+  mode        String      @default("invent") // explore | invent | analyze | compare
+  status      String      @default("active") // active | completed | archived
+  summary     String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  genes       Gene[]
+  inventions  Invention[]
+  hardware    Hardware[]
+  schematics  Schematic[]
+
+  @@index([createdAt])
+  @@index([status])
+}
+
+/// A technology gene — a unit of capability extracted from GitHub.
+/// Genes are the DNA of the resulting invention.
+model Gene {
+  id            String   @id @default(cuid())
+  sessionId     String
+  category      String   // input | processing | output | infrastructure | fusion
+  need          String
+  techName      String
+  role          String
+  githubUrl     String?
+  description   String?
+  stars         Int?
+  language      String?
+  license       String?
+  autonomy      Float    @default(50)
+  ethics        Float    @default(50)
+  decentral     Float    @default(50)
+  ahiScore      Float    @default(50)
+  createdAt     DateTime @default(now())
+
+  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([techName])
+}
+
+/// A synthesized invention — the output of the pipeline.
+/// Includes patent framing (claim, prior art, novelty) for IP defense.
+model Invention {
+  id            String   @id @default(cuid())
+  sessionId     String
+  name          String
+  definition    String
+  architecture  String   // markdown
+  patentClaim   String   @default("") // one-sentence novelty claim
+  priorArt      String   @default("") // existing systems + their gap
+  novelty       String   @default("") // technical novelty vs prior art
+  ahiscore      Float    @default(0)
+  autonomy      Float    @default(0)
+  ethics        Float    @default(0)
+  decentral     Float    @default(0)
+  reasoning     String?  // LLM's explanation of AHI scoring
+  status        String   @default("draft") // draft | validated | exported
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  session       Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([status])
+}
+
+/// Proposed hardware component for physically building the invention.
+/// Agent 6 (Hardware Architect) suggests concrete devices (RPi, GPU,
+/// USB camera, mic, 3D printer, sensors) and justifies each pick.
+///
+/// The agent now proposes 2-3 SOLUTION VARIANTS per invention (e.g.
+/// "Budget DIY", "Performance", "Pro Lab") — each variant is a complete
+/// BOM. `solutionId` groups components into a variant; `solutionName`
+/// is the human-readable label shown in the UI selector.
+model Hardware {
+  id              String   @id @default(cuid())
+  sessionId       String
+  inventionId     String?  // optional link to specific invention
+  solutionId      String   @default("sol-1") // groups components into a variant
+  solutionName    String   @default("Default") // e.g. "Budget DIY"
+  solutionPitch   String   @default("") // 1-sentence pitch for this variant
+  solutionCost    String   @default("") // total estimated cost, e.g. "$220"
+  name            String   // e.g. "Raspberry Pi 5 8GB"
+  category        String   // compute | sensing | actuation | fabrication | connectivity | power | storage
+  vendor          String?  // e.g. "Raspberry Pi Foundation"
+  role            String   // what this hardware DOES in the invention
+  rationale       String   // why this is the right choice
+  estimatedCost   String?  // e.g. "$80"
+  alternatives    String?  // other viable options
+  recommended     Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  session         Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([category])
+  @@index([solutionId])
+}
+
+/// AI-generated schematic or app-screen mock for the invention.
+/// Built in two steps: (1) LLM composes a detailed image-gen prompt
+/// with all device specs, (2) image generation model renders the image.
+model Schematic {
+  id           String   @id @default(cuid())
+  sessionId    String
+  inventionId  String?
+  kind         String   // device | app-screen | system-diagram
+  promptText   String   // the full prompt sent to the image model
+  imageDataUrl String   // base64 data URL of the generated PNG
+  modelUsed    String   // e.g. "image-generation-v2"
+  size         String   // e.g. "1344x768"
+  createdAt    DateTime @default(now())
+
+  session      Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+}

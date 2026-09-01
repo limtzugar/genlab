@@ -1,0 +1,76 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Build
+build/
+
+# Logs
+*.log
+dev.log
+server.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Prisma
+prisma/migrations/
+
+# Archives / backups
+*.tar.gz
+*.tar_1.gz
+*.zip
+*.bak
+
+# Screenshots in root (keep IMG/ folder)
+/*.jpg
+/*.png
+
+# Junk directories — do NOT commit
+GenLab-redesign-v2/
+Organizm/
+Organism - bat/
+Pi/
+Po audytach/
+dot-desktop-monitor-*/
+dot-desktop-monitor-portable-*/
+.zscripts/
+
+# Misc standalone files
+organism_interceptor.py
+organism_stabilizer.py
+project-backup-*.zip
+fba498a2-*.png
+qweqwe.jpg
+atlas.jpg
+event\ horizon.jpg
